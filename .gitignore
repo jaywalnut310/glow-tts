@@ -1,0 +1,12 @@
+DATASETS
+DUMMY
+DUMMY2
+samples
+logs
+__pycache__
+.ipynb_checkpoints
+.*.swp
+
+build
+*.c
+monotonic_align/monotonic_align
