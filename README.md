@@ -2,7 +2,7 @@
 
 ### Jaehyeon Kim, Sungwon Kim, Jungil Kong, and Sungroh Yoon
 
-In our recent [paper](https://arxiv.org/abs/2005.11129), we propose Glow-TTS: a generative flow for text-to-speech via monotonic alignment search.
+In our recent [paper](https://arxiv.org/abs/2005.11129), we propose Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search.
 
 Recently, text-to-speech (TTS) models such as FastSpeech and ParaNet have been proposed to generate mel-spectrograms from text in parallel. Despite the advantages, the parallel TTS models cannot be trained without guidance from autoregressive TTS models as their external aligners. In this work, we propose Glow-TTS, a flow-based generative model for parallel TTS that does not require any external aligner. We introduce Monotonic Alignment Search (MAS), an internal alignment search algorithm for training Glow-TTS. By leveraging the properties of flows, MAS searches for the most probable monotonic alignment between text and the latent representation of speech. Glow-TTS obtains an order-of-magnitude speed-up over the autoregressive TTS model, Tacotron 2, at synthesis with comparable speech quality, requiring only 1.5 seconds to synthesize one minute of speech in end-to-end. We further show that our model can be easily extended to a multi-speaker setting.
 
