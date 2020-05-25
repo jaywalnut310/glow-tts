@@ -8,7 +8,16 @@ Recently, text-to-speech (TTS) models such as FastSpeech and ParaNet have been p
 
 Visit our [demo](https://jaywalnut310.github.io/glow-tts-demo/index.html) for audio samples.
 
-![fig_1a](resources/fig_1a.png "Glow-TTS at training") ![fig_1b](resources/fig_1b.png "Glow-TTS at inference")
+<table style="width:100%">
+  <tr>
+    <th>Glow-TTS at training</th>
+    <th>Glow-TTS at inference</th>
+  </tr>
+  <tr>
+    <td><img src="resources/fig_1a.png" alt="Glow-TTS at training" height="400"></td>
+    <td><img src="resources/fig_1b.png" alt="Glow-TTS at inference" height="400"></td>
+  </tr>
+</table>
 
 ## 1. Environments we use
 
