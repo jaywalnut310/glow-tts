@@ -71,6 +71,8 @@ def train_and_eval(rank, n_gpus, hps):
   if hps.train.fp16_run:
     generator, optimizer_g._optim = amp.initialize(generator, optimizer_g._optim, opt_level="O1")
   generator = DDP(generator)
+  epoch_str = 1
+  global_step = 0
   try:
     _, _, _, epoch_str = utils.load_checkpoint(utils.latest_checkpoint_path(hps.model_dir, "G_*.pth"), generator, optimizer_g)
     epoch_str += 1
@@ -80,9 +82,6 @@ def train_and_eval(rank, n_gpus, hps):
   except:
     if hps.train.ddi and os.path.isfile(os.path.join(hps.model_dir, "ddi_G.pth")):
       _ = utils.load_checkpoint(os.path.join(hps.model_dir, "ddi_G.pth"), generator, optimizer_g)
-    epoch_str = 1
-    global_step = 0
-
   
   for epoch in range(epoch_str, hps.train.epochs + 1):
     if rank==0:
