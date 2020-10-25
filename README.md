@@ -21,6 +21,15 @@ We also provide the [pretrained model](https://drive.google.com/open?id=1JiCMBVT
   </tr>
 </table>
 
+
+## Update Notes*
+
+This result was not included in the paper. Lately, we found that two modifications help to improve the synthesis quality of Glow-TTS.; 1) moving to a vocoder, [HiFi-GAN](https://arxiv.org/abs/2010.05646) to reduce noise, 2) putting a blank token between any two input tokens to improve pronunciation. Specifically, 
+we used a fine-tuned vocoder with Tacotron 2 which is provided as a pretrained model in the [HiFi-GAN repo](https://github.com/jik876/hifi-gan). If you're interested, please listen to the samples in our [demo](https://jaywalnut310.github.io/glow-tts-demo/index.html).
+
+For adding a blank token, we provide a [config file](./configs/base_blank.json) and a [pretrained model](https://drive.google.com/open?id=1RxR6JWg6WVBZYb-pIw58hi1XLNb5aHEi). We also provide an inference example [inference_hifigan.ipynb](./inference_hifigan.ipynb). You may need to initialize HiFi-GAN submodule: `git submodule init; git submodule update`
+
+
 ## 1. Environments we use
 
 * Python3.6.9
@@ -37,7 +46,6 @@ For Mixed-precision training, we use [apex](https://github.com/NVIDIA/apex); com
 
 a) Download and extract the [LJ Speech dataset](https://keithito.com/LJ-Speech-Dataset/), then rename or create a link to the dataset folder: `ln -s /path/to/LJSpeech-1.1/wavs DUMMY`
 
-
 b) Initialize WaveGlow submodule: `git submodule init; git submodule update`
 
 Don't forget to download pretrained WaveGlow model and place it into the waveglow folder.
@@ -46,7 +54,6 @@ c) Build Monotonic Alignment Search Code (Cython): `cd monotonic_align; python s
 
 
 ## 3. Training Example
-
 
 ```sh
 sh train_ddi.sh configs/base.json base
@@ -57,17 +64,9 @@ sh train_ddi.sh configs/base.json base
 See [inference.ipynb](./inference.ipynb)
 
 
-## 5. Modifications after Paper Submission
-
-This result was not included in the paper. Lately, we found that two modifications help to improve the synthesis quality of Glow-TTS.; 1) moving to a vocoder, HiFi-GAN (https://arxiv.org/abs/2010.05646) to reduce noise, 2) putting a blank token between any two input tokens to improve pronunciation. Specifically, we used a fine-tuned vocoder with Tacotron 2 which is provided as a pretrained model in the repo (https://github.com/jik876/hifi-gan). If you're interested, please listen to the three samples in our demo.
-
-See [inference_hifigan.ipynb](./inference_hifigan.ipynb)
-
-For adding a blank token, we provide a config file and a pretrained model.
-
-
 ## Acknowledgements
-Our implementation is highly affected by the following repos:
+
+Our implementation is hugely influenced by the following repos:
 * [WaveGlow](https://github.com/NVIDIA/waveglow)
 * [Tensor2Tensor](https://github.com/tensorflow/tensor2tensor)
 * [Mellotron](https://github.com/NVIDIA/mellotron)

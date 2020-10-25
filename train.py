@@ -104,8 +104,8 @@ def train(rank, epoch, hps, generator, optimizer_g, train_loader, logger, writer
     # Train Generator
     optimizer_g.zero_grad()
     
-    (z, y_m, y_logs, logdet), attn, logw, logw_, x_m, x_logs = generator(x, x_lengths, y, y_lengths, gen=False)
-    l_mle = commons.mle_loss(z, y_m, y_logs, logdet, y_mask)
+    (z, z_m, z_logs, logdet, z_mask), (x_m, x_logs, x_mask), (attn, logw, logw_) = generator(x, x_lengths, y, y_lengths, gen=False)
+    l_mle = commons.mle_loss(z, z_m, z_logs, logdet, z_mask)
     l_length = commons.duration_loss(logw, logw_, x_lengths)
 
     loss_gs = [l_mle, l_length]
@@ -156,8 +156,8 @@ def evaluate(rank, epoch, hps, generator, optimizer_g, val_loader, logger, write
         y, y_lengths = y.cuda(rank, non_blocking=True), y_lengths.cuda(rank, non_blocking=True)
 
         
-        (z, y_m, y_logs, logdet), attn, logw, logw_, x_m, x_logs = generator(x, x_lengths, y, y_lengths, gen=False)
-        l_mle = commons.mle_loss(z, y_m, y_logs, logdet, y_mask)
+        (z, z_m, z_logs, logdet, z_mask), (x_m, x_logs, x_mask), (attn, logw, logw_) = generator(x, x_lengths, y, y_lengths, gen=False)
+        l_mle = commons.mle_loss(z, z_m, z_logs, logdet, z_mask)
         l_length = commons.duration_loss(logw, logw_, x_lengths)
 
         loss_gs = [l_mle, l_length]
