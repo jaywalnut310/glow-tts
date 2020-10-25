@@ -10,6 +10,25 @@ from audio_processing import dynamic_range_decompression
 from stft import STFT
 
 
+def intersperse(lst, item):
+  result = [item] * (len(lst) * 2 + 1)
+  result[1::2] = lst
+  return result
+
+
+def mle_loss(z, m, logs, logdet, mask):
+  l = torch.sum(logs) + 0.5 * torch.sum(torch.exp(-2 * logs) * ((z - m)**2)) # neg normal likelihood w/o the constant term
+  l = l - torch.sum(logdet) # log jacobian determinant
+  l = l / torch.sum(torch.ones_like(z) * mask) # averaging across batch, channel and time axes
+  l = l + 0.5 * math.log(2 * math.pi) # add the remaining constant term
+  return l
+
+
+def duration_loss(logw, logw_, lengths):
+  l = torch.sum((logw - logw_)**2) / torch.sum(lengths)
+  return l
+
+
 @torch.jit.script
 def fused_add_tanh_sigmoid_multiply(input_a, input_b, n_channels):
   n_channels_int = n_channels[0]

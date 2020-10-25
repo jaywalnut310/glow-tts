@@ -27,6 +27,7 @@
     "mel_fmin": 0.0,
     "mel_fmax": 8000.0,
     "add_noise": true,
+    "add_blank": true,
     "cmudict_path": "data/cmu_dictionary"
   },
   "model": {

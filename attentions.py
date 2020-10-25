@@ -64,7 +64,7 @@ class CouplingBlock(nn.Module):
     start = torch.nn.utils.weight_norm(start)
     self.start = start
     # Initializing last layer to 0 makes the affine coupling layers
-    # do nothing at first.  This helps with training stability
+    # do nothing at first.  It helps to stabilze training.
     end = torch.nn.Conv1d(hidden_channels, in_channels, 1)
     end.weight.data.zero_()
     end.bias.data.zero_()
@@ -77,9 +77,6 @@ class CouplingBlock(nn.Module):
     b, c, t = x.size()
     if x_mask is None:
       x_mask = 1
-      attn_mask = None
-    else:
-      attn_mask = x_mask.unsqueeze(2) * x_mask.unsqueeze(-1)
     x_0, x_1 = x[:,:self.in_channels//2], x[:,self.in_channels//2:]
 
     x = self.start(x_0) * x_mask

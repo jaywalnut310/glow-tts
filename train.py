@@ -64,7 +64,7 @@ def train_and_eval(rank, n_gpus, hps):
         drop_last=True, collate_fn=collate_fn)
 
   generator = models.FlowGenerator(
-      n_vocab=len(symbols), 
+      n_vocab=len(symbols) + getattr(hps.data, "add_blank", False), 
       out_channels=hps.data.n_mel_channels, 
       **hps.model).cuda(rank)
   optimizer_g = commons.Adam(generator.parameters(), scheduler=hps.train.scheduler, dim_model=hps.model.hidden_channels, warmup_steps=hps.train.warmup_steps, lr=hps.train.learning_rate, betas=hps.train.betas, eps=hps.train.eps)
@@ -105,8 +105,8 @@ def train(rank, epoch, hps, generator, optimizer_g, train_loader, logger, writer
     optimizer_g.zero_grad()
     
     (z, y_m, y_logs, logdet), attn, logw, logw_, x_m, x_logs = generator(x, x_lengths, y, y_lengths, gen=False)
-    l_mle = 0.5 * math.log(2 * math.pi) + (torch.sum(y_logs) + 0.5 * torch.sum(torch.exp(-2 * y_logs) * (z - y_m)**2) - torch.sum(logdet)) / (torch.sum(y_lengths // hps.model.n_sqz) * hps.model.n_sqz * hps.data.n_mel_channels) 
-    l_length = torch.sum((logw - logw_)**2) / torch.sum(x_lengths)
+    l_mle = commons.mle_loss(z, y_m, y_logs, logdet, y_mask)
+    l_length = commons.duration_loss(logw, logw_, x_lengths)
 
     loss_gs = [l_mle, l_length]
     loss_g = sum(loss_gs)
@@ -157,8 +157,9 @@ def evaluate(rank, epoch, hps, generator, optimizer_g, val_loader, logger, write
 
         
         (z, y_m, y_logs, logdet), attn, logw, logw_, x_m, x_logs = generator(x, x_lengths, y, y_lengths, gen=False)
-        l_mle = 0.5 * math.log(2 * math.pi) + (torch.sum(y_logs) + 0.5 * torch.sum(torch.exp(-2 * y_logs) * (z - y_m)**2) - torch.sum(logdet)) / (torch.sum(y_lengths // hps.model.n_sqz) * hps.model.n_sqz * hps.data.n_mel_channels)
-        l_length = torch.sum((logw - logw_)**2) / torch.sum(x_lengths)
+        l_mle = commons.mle_loss(z, y_m, y_logs, logdet, y_mask)
+        l_length = commons.duration_loss(logw, logw_, x_lengths)
+
         loss_gs = [l_mle, l_length]
         loss_g = sum(loss_gs)
 

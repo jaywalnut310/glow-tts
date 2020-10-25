@@ -38,7 +38,7 @@ def main():
       drop_last=True, collate_fn=collate_fn)
 
   generator = FlowGenerator_DDI(
-      len(symbols), 
+      len(symbols) + getattr(hps.data, "add_blank", False), 
       out_channels=hps.data.n_mel_channels,
       **hps.model).cuda()
   optimizer_g = commons.Adam(generator.parameters(), scheduler=hps.train.scheduler, dim_model=hps.model.hidden_channels, warmup_steps=hps.train.warmup_steps, lr=hps.train.learning_rate, betas=hps.train.betas, eps=hps.train.eps)
