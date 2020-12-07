@@ -79,4 +79,4 @@ def predict(tst_stn):
     return hps.data.sampling_rate, np.stack([audio, audio], 1)
     
 gr.Interface(predict, "text", "audio", 
-  examples=[["It's so easy to run a text-to-speech model!"], ["Joseph Biden was elected President of the United States."], ["How're you liking the conference so far?"]], title="Glow-TTS: A Generative Flow for Text-to-Speech", description="Try your own predictions with Jaehyeon Kim et al.'s model to be presented at NeurIPS 2020. (A typical sentence will take 10-20 seconds to run on CPU).").launch(share=True, debug=True)
+  examples=[["It's so easy to run a text-to-speech model!"], ["Joseph Biden was elected President of the United States."], ["How're you liking the conference so far?"]], title="Glow-TTS: A Generative Flow for Text-to-Speech", description="Try your own predictions with Jaehyeon Kim et al.'s model, presented at NeurIPS 2020. (A typical sentence will take approximately 20 seconds to run on CPU).").launch()
