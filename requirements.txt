@@ -5,3 +5,4 @@ numpy
 scipy
 unidecode
 inflect
+gdown
