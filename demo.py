@@ -1,3 +1,12 @@
+import os
+os.system('git submodule init; git submodule update')
+os.system('cd monotonic_align; python setup.py build_ext --inplace; cd ..')
+os.system('wget --content-disposition https://api.ngc.nvidia.com/v2/models/nvidia/waveglow_ljs_256channels/versions/3/zip -O waveglow_ljs_256channels_3.zip')
+os.system('mkdir waveglow/')
+os.system('unzip waveglow_ljs_256channels_3.zip -d waveglow/')
+os.system('mkdir pretrained/')
+os.system('cd pretrained; gdown --id 1JiCMBVTG4BMREK8cT3MYck1MgYvwASL0; cd ..')
+
 PRETRAINED_GLOW_TTS_PATH = "./pretrained/pretrained.pth"
 WAVEGLOW_PATH = './waveglow/waveglow_256channels_ljs_v3.pt' # or change to the latest version of the pretrained WaveGlow.
 
