@@ -4,3 +4,4 @@ librosa
 numpy
 scipy
 unidecode
+inflect
