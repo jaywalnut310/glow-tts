@@ -10,7 +10,6 @@ os.system('cd pretrained; gdown --id 1JiCMBVTG4BMREK8cT3MYck1MgYvwASL0; cd ..')
 PRETRAINED_GLOW_TTS_PATH = "./pretrained/pretrained.pth"
 WAVEGLOW_PATH = './waveglow/waveglow_256channels_ljs_v3.pt' # or change to the latest version of the pretrained WaveGlow.
 
-%matplotlib inline
 import matplotlib.pyplot as plt
 import IPython.display as ipd
 
@@ -19,7 +18,6 @@ sys.path.append('./waveglow/')
 
 import librosa
 import numpy as np
-import os
 import glob
 import json
 
