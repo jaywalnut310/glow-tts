@@ -9,6 +9,7 @@ import attentions
 import monotonic_align
 
 
+
 class DurationPredictor(nn.Module):
   def __init__(self, in_channels, filter_channels, kernel_size, p_dropout):
     super().__init__()

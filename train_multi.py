@@ -7,10 +7,8 @@ from torch import nn, optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-import torch.multiprocessing as mp
 import torch.distributed as dist
-from apex.parallel import DistributedDataParallel as DDP
-from apex import amp
+
 
 from data_utils import TextMelLoader, TextMelCollate , TextMelSpeakerLoader, TextMelSpeakerCollate
 import models
@@ -26,14 +24,13 @@ def main():
   """Assume Single Node Multi GPUs Training Only"""
   assert torch.cuda.is_available(), "CPU training is not allowed."
 
-  n_gpus = torch.cuda.device_count()
+  n_gpus = torch.cuda.current_device()
+  print(n_gpus)
   rank=0
-  os.environ['MASTER_ADDR'] = 'localhost'
-  os.environ['MASTER_PORT'] = '7777'
 
   hps = utils.get_hparams()
-  print("loaded hyper parameters")
-  mp.spawn(train_and_eval, nprocs=n_gpus, args=(n_gpus, hps))
+  train_and_eval(rank,1,hps)
+  
   
 
 def train_and_eval(rank, n_gpus, hps):
@@ -46,26 +43,24 @@ def train_and_eval(rank, n_gpus, hps):
     writer_eval = SummaryWriter(log_dir=os.path.join(hps.model_dir, "eval"))
 
 
-
-  dist.init_process_group(backend='nccl', init_method="env://", world_size=n_gpus, rank=rank)
-  
-
   torch.manual_seed(hps.train.seed)
-  torch.cuda.set_device(rank)
+  torch.cuda.set_device(n_gpus)
 
 
-  train_dataset = TextMelLoader(hps.data.training_files, hps.data)
+  train_dataset = TextMelSpeakerLoader(hps.data.training_files, hps.data)
+  """
   train_sampler = torch.utils.data.distributed.DistributedSampler(
       train_dataset,
       num_replicas=n_gpus,
       rank=rank,
       shuffle=True)
-  collate_fn = TextMelCollate(1)
+  """
+  collate_fn = TextMelSpeakerCollate(1)
   train_loader = DataLoader(train_dataset, num_workers=8, shuffle=False,
       batch_size=hps.train.batch_size, pin_memory=True,
-      drop_last=True, collate_fn=collate_fn, sampler=train_sampler)
+      drop_last=True, collate_fn=collate_fn)
   if rank == 0:
-    val_dataset = TextMelLoader(hps.data.validation_files, hps.data)
+    val_dataset = TextMelSpeakerLoader(hps.data.validation_files, hps.data)
     val_loader = DataLoader(val_dataset, num_workers=8, shuffle=False,
         batch_size=hps.train.batch_size, pin_memory=True,
         drop_last=True, collate_fn=collate_fn)
@@ -73,14 +68,13 @@ def train_and_eval(rank, n_gpus, hps):
 
   generator = models.FlowGenerator(
       n_vocab=len(symbols) + getattr(hps.data, "add_blank", False), 
-      out_channels=hps.data.n_mel_channels, 
-      **hps.model).cuda(rank)
+      out_channels=hps.data.n_mel_channels,n_speakers=hps.model.n_speaker,gin_channels=80,**hps.model).cuda()
   optimizer_g = commons.Adam(generator.parameters(), scheduler=hps.train.scheduler, dim_model=hps.model.hidden_channels, warmup_steps=hps.train.warmup_steps, lr=hps.train.learning_rate, betas=hps.train.betas, eps=hps.train.eps)
-  
+  """
   if hps.train.fp16_run:
     generator, optimizer_g._optim = amp.initialize(generator, optimizer_g._optim, opt_level="O1")
   generator = DDP(generator)
-  
+  """
   epoch_str = 1
   global_step = 0
   try:
@@ -104,36 +98,36 @@ def train_and_eval(rank, n_gpus, hps):
 
 
 def train(rank, epoch, hps, generator, optimizer_g, train_loader, logger, writer):
-  train_loader.sampler.set_epoch(epoch)
   global global_step
 
   generator.train()
-  for batch_idx, (x, x_lengths, y, y_lengths) in enumerate(train_loader):
+  for batch_idx, (x, x_lengths, y, y_lengths, sid) in enumerate(train_loader):
     x, x_lengths = x.cuda(rank, non_blocking=True), x_lengths.cuda(rank, non_blocking=True)
     y, y_lengths = y.cuda(rank, non_blocking=True), y_lengths.cuda(rank, non_blocking=True)
-
+    si=sid.cuda(rank,non_blocking=True)
     # Train Generator
     optimizer_g.zero_grad()
     
-    (z, z_m, z_logs, logdet, z_mask), (x_m, x_logs, x_mask), (attn, logw, logw_) = generator(x, x_lengths, y, y_lengths, gen=False)
+    (z, z_m, z_logs, logdet, z_mask), (x_m, x_logs, x_mask), (attn, logw, logw_) = generator(x, x_lengths, y, y_lengths,sid, gen=False)
     l_mle = commons.mle_loss(z, z_m, z_logs, logdet, z_mask)
     l_length = commons.duration_loss(logw, logw_, x_lengths)
 
     loss_gs = [l_mle, l_length]
     loss_g = sum(loss_gs)
-
+    """
     if hps.train.fp16_run:
       with amp.scale_loss(loss_g, optimizer_g._optim) as scaled_loss:
         scaled_loss.backward()
       grad_norm = commons.clip_grad_value_(amp.master_params(optimizer_g._optim), 5)
     else:
-      loss_g.backward()
-      grad_norm = commons.clip_grad_value_(generator.parameters(), 5)
+    """
+    loss_g.backward()
+    grad_norm = commons.clip_grad_value_(generator.parameters(), 5)
     optimizer_g.step()
     
     if rank==0:
       if batch_idx % hps.train.log_interval == 0:
-        (y_gen, *_), *_ = generator.module(x[:1], x_lengths[:1], gen=True)
+        (y_gen, *_), *_ = generator(x[:1], x_lengths[:1], gen=True)
         logger.info('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
           epoch, batch_idx * len(x), len(train_loader.dataset),
           100. * batch_idx / len(train_loader),

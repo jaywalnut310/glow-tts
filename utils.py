@@ -9,6 +9,8 @@ import numpy as np
 from scipy.io.wavfile import read
 import torch
 
+import soundfile
+
 MATPLOTLIB_FLAG = False
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -134,6 +136,10 @@ def load_wav_to_torch(full_path):
   sampling_rate, data = read(full_path)
   return torch.FloatTensor(data.astype(np.float32)), sampling_rate
 
+def load_flac_to_torch(full_path):
+  data,sampling_rate=soundfile.read(full_path)
+  return torch.FloatTensor(data.astype(np.float32)),sampling_rate
+
 
 def load_filepaths_and_text(filename, split="|"):
   with open(filename, encoding='utf-8') as f:
@@ -143,13 +149,13 @@ def load_filepaths_and_text(filename, split="|"):
 
 def get_hparams(init=True):
   parser = argparse.ArgumentParser()
-  parser.add_argument('-c', '--config', type=str, default="./configs/base.json",
-                      help='JSON file for configuration')
-  parser.add_argument('-m', '--model', type=str, required=True,
+  parser.add_argument('-c', '--config', type=str, default="./configs/base_blank.json",
+                      help='JSON file for configuration',required=False)
+  parser.add_argument('-m', '--model', type=str, default="base",required=False,
                       help='Model name')
   
   args = parser.parse_args()
-  model_dir = os.path.join("./logs", args.model)
+  model_dir = os.path.join("/media/caijb/data_drive/glowtts/logs", args.model)
 
   if not os.path.exists(model_dir):
     os.makedirs(model_dir)
