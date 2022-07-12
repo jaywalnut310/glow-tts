@@ -15,18 +15,20 @@
   },
   "data": {
     "load_mel_from_disk": false,
-    "training_files":"/media/caijb/data_drive/data/LJSpeech-1.1/lj_train_set.txt",
-    "validation_files":"/media/caijb/data_drive/data/LJSpeech-1.1/lj_val_set.txt",
+    "training_files":"/media/caijb/data_drive/data/vctk/vctk_train.txt",
+    "validation_files":"/media/caijb/data_drive/data/vctk/vctk_test.txt",
     "text_cleaners":["english_cleaners"],
     "max_wav_value": 32768.0,
-    "sampling_rate": 22050,
+    "sampling_rate": 48000,
     "filter_length": 1024,
     "hop_length": 256,
     "win_length": 1024,
     "n_mel_channels": 80,
     "mel_fmin": 0.0,
     "mel_fmax": 8000.0,
-    "add_noise": true
+    "add_noise": true,
+    "add_blank": true,
+    "cmudict_path": "data/cmu_dictionary"
   },
   "model": {
     "hidden_channels": 192,
@@ -46,6 +48,8 @@
     "mean_only": true,
     "hidden_channels_enc": 192,
     "hidden_channels_dec": 192,
-    "window_size": 4
+    "window_size": 4,
+    "n_speaker" :110
+
   }
 }
