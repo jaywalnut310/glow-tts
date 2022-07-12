@@ -14,6 +14,7 @@ hyperparameter. Some cleaners are English-specific. You'll typically want to use
 
 import re
 from unidecode import unidecode
+from unicodedata import normalize
 from .numbers import normalize_numbers
 
 
@@ -64,6 +65,27 @@ def collapse_whitespace(text):
 def convert_to_ascii(text):
   return unidecode(text)
 
+def replace_symbols(text, lang="en"):
+    text = text.replace(";", ",")
+    text = text.replace("-", " ")
+    text = text.replace(":", ",")
+    if lang == "en":
+        text = text.replace("&", " and ")
+    elif lang == "fr":
+        text = text.replace("&", " et ")
+    elif lang == "pt":
+        text = text.replace("&", " e ")
+    elif lang == "kr":
+        text = text.replace("&", " 앤 ")
+    return text
+
+def remove_aux_symbols(text):
+    text = re.sub(r"[\<\>\(\)\[\]\"]+", "", text)
+    return text
+
+def nfd(text):
+    return normalize('NFD', text)
+
 
 def basic_cleaners(text):
   '''Basic pipeline that lowercases and collapses whitespace without transliteration.'''
@@ -87,4 +109,12 @@ def english_cleaners(text):
   text = expand_numbers(text)
   text = expand_abbreviations(text)
   text = collapse_whitespace(text)
+  return text
+
+def korean_cleaners(text):
+  text = lowercase(text)
+  text = replace_symbols(text, lang="kr")
+  text = remove_aux_symbols(text)
+  text = collapse_whitespace(text)
+  text = nfd(text)
   return text
