@@ -6,7 +6,7 @@ logs
 __pycache__
 .ipynb_checkpoints
 .*.swp
-
+filelists/wavs/
 build
 *.c
 monotonic_align/monotonic_align
